@@ -1,0 +1,54 @@
+-- Tabela de Jogadores
+CREATE TABLE memory.jogador (
+    id SERIAL PRIMARY KEY,
+    nickname VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL, -- Use hashing para senhas!
+    pontuacao_total INTEGER DEFAULT 0
+);
+
+-- Tabela de Jogos
+CREATE TABLE memory.jogo (
+    id SERIAL PRIMARY KEY,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    pontos INTEGER NOT NULL,
+    sequencia VARCHAR(255) NOT NULL, -- Armazena a sequência jogada, ex: 'RGBY' para Red, Green, Blue, Yellow
+    nivel INTEGER NOT NULL, -- Representa o nível alcançado no jogo
+    tipo_jogo VARCHAR(20) NOT NULL DEFAULT 'single' -- Pode ser 'single' ou 'duo'
+);
+
+-- Tabela de Conquistas
+CREATE TABLE memory.conquista (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT, -- Descrição da conquista
+    pontuacao_necessaria INTEGER NOT NULL
+);
+
+-- Relacionamento entre Jogadores e Conquistas
+CREATE TABLE memory.jogador_conquista (
+    jogador_id INTEGER REFERENCES jogador(id) ON DELETE CASCADE,
+    conquista_id INTEGER REFERENCES conquista(id) ON DELETE CASCADE,
+    PRIMARY KEY (jogador_id, conquista_id)
+);
+
+-- Relacionamento entre Jogos e Jogadores
+CREATE TABLE memory.jogo_jogador (
+    jogo_id INTEGER REFERENCES jogo(id) ON DELETE CASCADE,
+    jogador_id INTEGER REFERENCES jogador(id) ON DELETE CASCADE,
+    PRIMARY KEY (jogo_id, jogador_id),
+    pontos INTEGER, -- Pontuação específica deste jogador neste jogo
+    acertou_sequencia BOOLEAN DEFAULT FALSE -- Indica se o jogador acertou a sequência completa
+);
+
+-- Modo de Jogo de Duas Pessoas (Jogos em Dupla)
+CREATE TABLE memory.jogo_dupla (
+    id SERIAL PRIMARY KEY,
+    jogo_id INTEGER REFERENCES jogo(id) ON DELETE CASCADE,
+    jogador1_id INTEGER REFERENCES jogador(id) ON DELETE SET NULL,
+    jogador2_nickname VARCHAR(50), -- Identifica o segundo jogador não logado
+    pontos_jogador1 INTEGER,
+    pontos_jogador2 INTEGER,
+    vencedor INTEGER, -- 1 para jogador1, 2 para jogador2, ou NULL se empate
+    sequencia_vencedora VARCHAR(255) -- A sequência correta jogada pelo vencedor
+);
